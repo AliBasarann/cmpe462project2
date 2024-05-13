@@ -19,7 +19,6 @@ Thumbs.db
 .env
 
 env
-data/
 *.csv
 # Ignore package-lock.json for npm projects
 package-lock.json
