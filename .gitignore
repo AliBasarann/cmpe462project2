@@ -1,0 +1,38 @@
+# Ignore compiled binaries
+*.exe
+*.out
+*.dll
+
+# Ignore metadata files
+*.DS_Store
+Thumbs.db
+
+# Ignore log files
+*.log
+
+# Ignore user-specific files
+*.config
+
+*.zip
+
+# Ignore environment-specific files
+.env
+
+env
+data/
+*.csv
+# Ignore package-lock.json for npm projects
+package-lock.json
+
+# Ignore IDE and editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignore node_modules for Node.js projects
+node_modules/
+
+# Ignore dependency directories for Python projects
+__pycache__/
+venv/
