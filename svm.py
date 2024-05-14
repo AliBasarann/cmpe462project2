@@ -1,4 +1,3 @@
-import pandas as pd
 import numpy as np
 from cvxopt import matrix, solvers
 from sklearn.svm import LinearSVC, SVC
@@ -6,6 +5,24 @@ from sklearn.metrics import accuracy_score
 import time
 import sys
 from prepare_dataset import load_dataset, flatten_data_and_scale, extract_features
+import matplotlib.pyplot as plt
+
+def visualize_images(support_vectors, non_support_vectors, num_rows=2, num_cols=10, plot_title="Images"):
+    plt.figure(figsize=(15, 1.5 * num_rows))
+    for i in range(num_cols):
+        plt.subplot(num_rows, num_cols, i + 1)
+        plt.imshow(support_vectors[i].reshape(28, 28), cmap='gray')
+        plt.title(f"SV {i+1}")
+        plt.axis('off') 
+    for i in range(num_cols):
+        plt.subplot(num_rows, num_cols, num_cols + i + 1)
+        plt.imshow(non_support_vectors[i].reshape(28, 28), cmap='gray')
+        plt.title(f"Non-SV {i+1}")
+        plt.axis('off')
+    
+    plt.suptitle(plot_title)
+    plt.suptitle
+    plt.show()
 
 def svm_linear_train(X, y, C=0.2, max_iters=100):
     n_samples, n_features = X.shape
@@ -166,6 +183,22 @@ def train_and_evaluate_with_sklearn_nonlinear(X_train, Y_train, X_test, Y_test, 
     
     return svc, training_time, train_accuracy, test_accuracy
 
+def train_and_visualize(X_train, Y_train, X_test, Y_test, classes, C=0.1, gamma=0.05):
+    svc = SVC(C=C, gamma=gamma, kernel='poly', random_state=42)
+    start_time = time.time()
+    svc.fit(X_train, Y_train)
+    training_time = time.time() - start_time
+    Y_train_pred = svc.predict(X_train)
+    Y_test_pred = svc.predict(X_test)
+    train_accuracy = accuracy_score(Y_train, Y_train_pred)
+    test_accuracy = accuracy_score(Y_test, Y_test_pred)
+    print(f"Training time with scikit-learn non-linear SVM: {training_time:.2f} seconds")
+    print(f"Training Accuracy with scikit-learn non-linear SVM: {train_accuracy * 100:.2f}%")
+    print(f"Test Accuracy with scikit-learn non-linear SVM: {test_accuracy * 100:.2f}%")
+    non_sv_indices = [i for i in range(X_train.shape[0]) if i not in svc.support_]
+    non_support_vectors = X_train[non_sv_indices]
+    visualize_images(svc.support_vectors_, non_support_vectors=non_support_vectors, plot_title="Support and Non Support Vectors")
+    return svc, training_time
 def main():
     train_data, test_data = load_dataset()
     (X_train, Y_train, X_test, Y_test) = flatten_data_and_scale(train_data=train_data, test_data=test_data)
@@ -181,8 +214,8 @@ def main():
         print("Extracting features using PCA...")
         X_train, X_test = extract_features(X_train, X_test)
         max_iters = 50
-    print("Training with one-vs-all linear SVM...")
-    train_one_vs_all_linear_and_evaluate(X_train, Y_train, X_test, Y_test, classes, max_iters=max_iters)
+    # print("Training with one-vs-all linear SVM...")
+    # train_one_vs_all_linear_and_evaluate(X_train, Y_train, X_test, Y_test, classes, max_iters=max_iters)
 
     # print("Training with scikit-learn SVM...")
     # train_and_evaluate_with_sklearn_linear(X_train, Y_train, X_test, Y_test)
@@ -192,5 +225,9 @@ def main():
     
     # print("Training with scikit-learn non-linear SVM...")
     # train_and_evaluate_with_sklearn_nonlinear(X_train, Y_train, X_test, Y_test)
+
+    print("Training and visualizing support vectors with scikit-learn non-linear SVM...")
+    train_and_visualize(X_train, Y_train, X_test, Y_test, classes)
+
 if __name__ == '__main__':
     main()
