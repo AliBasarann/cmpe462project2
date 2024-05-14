@@ -35,3 +35,5 @@ node_modules/
 # Ignore dependency directories for Python projects
 __pycache__/
 venv/
+
+results

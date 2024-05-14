@@ -1,5 +1,5 @@
 import numpy as np
-from prepare_dataset import load_dataset
+from prepare_dataset import load_dataset, extract_features
 from sklearn.metrics import silhouette_score
 
 
@@ -99,30 +99,53 @@ if __name__ == "__main__":
 
     k = 4 
     clusters, centroids = kmeans(X_train, k)
-    find_num_of_labels(y_train, clusters)
     most_common_label = find_most_common_label(find_num_of_labels(y_train, clusters))
     accuracy = find_accuracy(y_train, clusters, most_common_label)
     print("Train Accuracy: " + str(accuracy))
 
+    error = compute_error(X_train, clusters, centroids)
+    print(f'Train SSE: {error}')
+
 
     clusters = cluster_testset(X_test, centroids)
-    find_num_of_labels(y_test, clusters)
     most_common_label = find_most_common_label(find_num_of_labels(y_test, clusters))
     accuracy = find_accuracy(y_test, clusters, most_common_label)
     print("Test Accuracy: " + str(accuracy))
 
 
     error = compute_error(X_test, clusters, centroids)
-    print(f'SSE: {error}')
+    print(f'Test SSE: {error}')
 
-    silhouette_avg = silhouette_score(X_test, clusters)
-    print(f'Silhouette Score: {silhouette_avg}')
+
+
+    train_data, test_data = extract_features(X_train, X_test)
+    clusters, centroids = kmeans(train_data, k)
+    most_common_label = find_most_common_label(find_num_of_labels(y_train, clusters))
+    accuracy = find_accuracy(y_train, clusters, most_common_label)
+    print("Train Accuracy with PCA: " + str(accuracy))
+
+    error = compute_error(train_data, clusters, centroids)
+    print(f'PCA Train SSE: {error}')
+
+
+    clusters = cluster_testset(test_data, centroids)
+    most_common_label = find_most_common_label(find_num_of_labels(y_test, clusters))
+    accuracy = find_accuracy(y_test, clusters, most_common_label)
+    print("Test Accuracy with PCA: " + str(accuracy))
+
+    error = compute_error(test_data, clusters, centroids)
+    print(f'PCA Test SSE: {error}')
+
+
 
     clusters, centroids = kmeans(X_train, k, is_cosine=True)
-    find_num_of_labels(y_train, clusters)
     most_common_label = find_most_common_label(find_num_of_labels(y_train, clusters))
     accuracy = find_accuracy(y_train, clusters, most_common_label)
     print("Train Accuracy cosine: " + str(accuracy))
+
+    error = compute_error(X_train, clusters, centroids)
+    print(f'Train SSE cosine: {error}')
+
 
     clusters = cluster_testset(X_test, centroids)
     find_num_of_labels(y_test, clusters)
@@ -131,8 +154,22 @@ if __name__ == "__main__":
     print("Test Accuracy cosine: " + str(accuracy))
 
     error = compute_error(X_test, clusters, centroids)
-    print(f'SSE cosine: {error}')
+    print(f'Test SSE cosine: {error}')
 
-    # Compute Silhouette Score
-    silhouette_avg = silhouette_score(X_test, clusters)
-    print(f'Silhouette Score cosine: {silhouette_avg}')
+
+    train_data, test_data = extract_features(X_train, X_test)
+    clusters, centroids = kmeans(train_data, k, is_cosine=True)
+    most_common_label = find_most_common_label(find_num_of_labels(y_train, clusters))
+    accuracy = find_accuracy(y_train, clusters, most_common_label)
+    print("Train Accuracy with PCA cosine: " + str(accuracy))
+
+    error = compute_error(train_data, clusters, centroids)
+    print(f'PCA Train SSE cosine: {error}')
+
+    clusters = cluster_testset(test_data, centroids)
+    most_common_label = find_most_common_label(find_num_of_labels(y_test, clusters))
+    accuracy = find_accuracy(y_test, clusters, most_common_label)
+    print("Test Accuracy with PCA cosine: " + str(accuracy))
+
+    error = compute_error(test_data, clusters, centroids)
+    print(f'PCA Test SSE cosine: {error}')

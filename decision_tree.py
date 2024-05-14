@@ -4,6 +4,8 @@ from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 import matplotlib.pyplot as plt
 from sklearn.tree import plot_tree
+from sklearn.ensemble import RandomForestClassifier
+
 import numpy as np
 
 
@@ -84,8 +86,40 @@ def train_and_visualize_tree(depth):
     plt.figure(figsize=(10, 6))
     plot_tree(dt_clf, filled=True, feature_names=[f"feature_{i}" for i in range(X_train.shape[1])], class_names=[str(i) for i in range(10)])
     plt.title(f"Decision Tree with Max Depth {depth}")
+    plt.savefig(f"results/tree_depth_{depth}.png")
     plt.show()
     return dt_clf
+
+
+def train_forest(n_estimators):
+    rf_clf = RandomForestClassifier(n_estimators=n_estimators, random_state=42)
+    rf_clf.fit(X_train, y_train)
+
+    return rf_clf
+
+def plot_rf_performance(n_trees_list):
+    train_accuracies = []
+    test_accuracies = []
+
+    for n_trees in n_trees_list:
+        rf_clf = train_forest(n_trees)
+
+        train_acc = accuracy_score(y_train, rf_clf.predict(X_train))
+        test_acc = accuracy_score(y_test, rf_clf.predict(X_test))
+
+        train_accuracies.append(train_acc)
+        test_accuracies.append(test_acc)
+
+    plt.figure(figsize=(10, 6))
+    plt.plot(n_trees_list, train_accuracies, label='Training Accuracy')
+    plt.plot(n_trees_list, test_accuracies, label='Testing Accuracy')
+    plt.xlabel('Number of Trees')
+    plt.ylabel('Accuracy')
+    plt.title('Random Forest Performance vs. Number of Trees')
+    plt.legend()
+    plt.savefig("results/rf_performance.png")
+    plt.grid(True)
+    plt.show()
 
 
 if __name__ == "__main__":
@@ -99,12 +133,15 @@ if __name__ == "__main__":
     for depth in depths_to_test:
         dt_clf = train_and_visualize_tree(depth)
 
+        y_pred = dt_clf.predict(X_train)
+        accuracy = accuracy_score(y_train, y_pred)
+        print(f"Train accuracy for decision tree with maximum depth {depth}:", accuracy)
+
         # Predict on the test set
         y_pred = dt_clf.predict(X_test)
-
         # Calculate accuracy
         accuracy = accuracy_score(y_test, y_pred)
-        print(f"Accuracy for decision tree with depth {depth}:", accuracy)
+        print(f"Test accuracy for decision tree with maximum depth {depth}:", accuracy)
 
     dt_clf = DecisionTreeClassifier(max_depth=depth, random_state=42)    
     dt_clf.fit(X_train, y_train)
@@ -112,7 +149,7 @@ if __name__ == "__main__":
 
     # Calculate accuracy
     accuracy = accuracy_score(y_test, y_pred)
-    print(f"Accuracy for decision tree:", accuracy)
+    print(f"Test accuracy for decision tree:", accuracy)
 
     classifier = NaiveBayes()
     classifier.fit(X_train, y_train)
@@ -129,3 +166,12 @@ if __name__ == "__main__":
     for num_features in num_features_to_test:
         accuracy_lr = train_linear_classifier_with_features(num_features)
         print(f"Accuracy with {num_features} features:", accuracy_lr)
+
+    rf_clf = train_forest(100)
+    y_pred_rf = rf_clf.predict(X_test)
+    accuracy_rf = accuracy_score(y_test, y_pred_rf)
+    print(f"Accuracy for random forest", accuracy_rf)
+    n_trees_list = [10, 20, 40, 60, 80, 100, 120, 140, 160, 180, 200]
+
+    # Plot the performances
+    plot_rf_performance(n_trees_list)
